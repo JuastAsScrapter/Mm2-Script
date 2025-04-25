@@ -1,0 +1,123 @@
+-- // MM2 Script with ESP, Gradient GUI, Shoot Murderer, Grab Gun // --
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- UI
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+-- Gradient Background: White (Top-Left) to Black (Bottom-Right)
+local gradient = Instance.new("UIGradient", MainFrame)
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)), -- White
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))        -- Black
+}
+gradient.Rotation = 45
+
+-- Title: Startlight
+local Tab = Instance.new("TextLabel", MainFrame)
+Tab.Size = UDim2.new(1, 0, 0, 40)
+Tab.Text = "Startlight"
+Tab.Font = Enum.Font.GothamBold
+Tab.TextSize = 24
+Tab.TextColor3 = Color3.new(0, 0, 0)
+Tab.BackgroundTransparency = 1
+
+-- Button Template
+function createButton(text, posY, callback)
+    local btn = Instance.new("TextButton", MainFrame)
+    btn.Size = UDim2.new(0.9, 0, 0, 40)
+    btn.Position = UDim2.new(0.05, 0, 0, posY)
+    btn.Text = text
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 18
+    btn.TextColor3 = Color3.new(0, 0, 0)
+    btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = true
+    btn.MouseButton1Click:Connect(callback)
+    return btn
+end
+
+-- ESP Logic
+local function createESP(player, role)
+    local billboard = Instance.new("BillboardGui", player.Character:WaitForChild("Head"))
+    billboard.Name = "RoleESP"
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+
+    local label = Instance.new("TextLabel", billboard)
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = role == "Murderer" and Color3.fromRGB(255, 0, 0)
+        or role == "Sheriff" and Color3.fromRGB(0, 0, 255)
+        or Color3.fromRGB(100, 100, 100)
+    label.Text = role
+    label.TextScaled = true
+end
+
+local function getRole(player)
+    if not player.Character then return "Innocent" end
+    local tool = player.Character:FindFirstChildOfClass("Tool")
+    if tool then
+        if tool.Name == "Knife" then return "Murderer" end
+        if tool.Name == "Gun" then return "Sheriff" end
+    end
+    return "Innocent"
+end
+
+local function updateESP()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            if not player.Character.Head:FindFirstChild("RoleESP") then
+                local role = getRole(player)
+                createESP(player, role)
+            end
+        end
+    end
+end
+
+RunService.RenderStepped:Connect(updateESP)
+
+-- UI Buttons
+createButton("Grab Gun", 60, function()
+    for _, item in pairs(workspace:GetDescendants()) do
+        if item:IsA("Tool") and item.Name == "GunDrop" then
+            LocalPlayer.Character:MoveTo(item.Position)
+            break
+        end
+    end
+end)
+
+createButton("Shoot Murderer", 110, function()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and getRole(player) == "Murderer" then
+            local args = {
+                [1] = player.Character.HumanoidRootPart.Position,
+                [2] = player.Character
+            }
+            game.ReplicatedStorage:WaitForChild("ShootGun"):FireServer(unpack(args))
+            break
+        end
+    end
+end)
+
+local espEnabled = true
+createButton("Toggle ESP", 160, function()
+    espEnabled = not espEnabled
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Character and player.Character:FindFirstChild("Head") then
+            local gui = player.Character.Head:FindFirstChild("RoleESP")
+            if gui then gui.Enabled = espEnabled end
+        end
+    end
+end)
