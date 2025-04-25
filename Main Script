@@ -1,0 +1,127 @@
+-- 🌌 Starlight MM2 Script with Advanced GUI and Credits
+
+-- Define theme colors
+local colors = {
+    background = Color3.fromRGB(48, 25, 52), -- Dark Purple
+    accent = Color3.fromRGB(90, 79, 124),    -- Purple
+    text = Color3.fromRGB(255, 255, 255),    -- White
+    error = Color3.fromRGB(255, 77, 77),     -- Red
+    success = Color3.fromRGB(127, 255, 127)  -- Green
+}
+
+-- Function to create a draggable window
+local function createDraggableWindow(parent, title)
+    -- Create the main frame
+    local frame = Instance.new("Frame")
+    frame.Parent = parent
+    frame.BackgroundColor3 = colors.background
+    frame.Size = UDim2.new(0, 400, 0, 300)
+    frame.Position = UDim2.new(0.5, -200, 0.5, -150)
+    frame.Active = true
+    frame.Draggable = true
+
+    -- Create the title bar
+    local titleBar = Instance.new("Frame")
+    titleBar.Parent = frame
+    titleBar.BackgroundColor3 = colors.accent
+    titleBar.Size = UDim2.new(1, 0, 0, 30)
+
+    -- Create the title label
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Parent = titleBar
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Size = UDim2.new(1, 0, 1, 0)
+    titleLabel.Text = title
+    titleLabel.TextColor3 = colors.text
+    titleLabel.TextSize = 18
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Center
+    titleLabel.TextYAlignment = Enum.TextYAlignment.Center
+
+    return frame
+end
+
+-- Function to create a button
+local function createButton(parent, text, callback)
+    local button = Instance.new("TextButton")
+    button.Parent = parent
+    button.BackgroundColor3 = colors.accent
+    button.Size = UDim2.new(1, 0, 0, 40)
+    button.Text = text
+    button.TextColor3 = colors.text
+    button.TextSize = 16
+    button.MouseButton1Click:Connect(callback)
+    return button
+end
+
+-- Function to create credits section
+local function createCreditsSection(parent)
+    local creditsWindow = createDraggableWindow(parent, "Credits")
+
+    -- Create a label for Credits
+    local creditsLabel = Instance.new("TextLabel")
+    creditsLabel.Parent = creditsWindow
+    creditsLabel.BackgroundTransparency = 1
+    creditsLabel.Size = UDim2.new(1, 0, 1, 0)
+    creditsLabel.Text = "Credits:\n\nSigmaBoy\nChatGBT"
+    creditsLabel.TextColor3 = colors.text
+    creditsLabel.TextSize = 18
+    creditsLabel.TextXAlignment = Enum.TextXAlignment.Center
+    creditsLabel.TextYAlignment = Enum.TextYAlignment.Top
+    creditsLabel.TextWrapped = true
+end
+
+-- Create the main GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+screenGui.Name = "StarlightMM2GUI"
+
+-- Create the main window
+local mainWindow = createDraggableWindow(screenGui, "Starlight MM2")
+
+-- Create the buttons
+local buttonFrame = Instance.new("Frame")
+buttonFrame.Parent = mainWindow
+buttonFrame.BackgroundTransparency = 1
+buttonFrame.Position = UDim2.new(0, 0, 0, 30)
+buttonFrame.Size = UDim2.new(1, 0, 1, -30)
+
+local button1 = createButton(buttonFrame, "Auto Kill", function()
+    -- Auto Kill functionality
+end)
+
+local button2 = createButton(buttonFrame, "Auto Gun Grab", function()
+    -- Auto Gun Grab functionality
+end)
+
+local button3 = createButton(buttonFrame, "ESP", function()
+    -- ESP functionality
+end)
+
+local button4 = createButton(buttonFrame, "Auto Throw Knife", function()
+    -- Auto Throw Knife functionality
+end)
+
+local button5 = createButton(buttonFrame, "Auto Detect Murderer", function()
+    -- Auto Detect Murderer functionality
+end)
+
+-- Create the credits section
+createCreditsSection(screenGui)
+
+-- Layout the buttons
+local layout = Instance.new("UIListLayout")
+layout.Parent = buttonFrame
+layout.FillDirection = Enum.FillDirection.Vertical
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.VerticalAlignment = Enum.VerticalAlignment.Top
+layout.Padding = UDim(0, 5)
+
+-- Key system
+local correctKey = "Starlight"
+local userInput = game:GetService("Players").LocalPlayer.PlayerGui:WaitForChild("StarlightMM2GUI"):WaitForChild("KeyInput").Text
+
+if userInput == correctKey then
+    -- Initialize features
+else
+    -- Display error message
+end
