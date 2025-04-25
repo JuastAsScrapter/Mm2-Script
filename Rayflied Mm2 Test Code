@@ -1,0 +1,222 @@
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/something/whatever-rayfield-url.lua'))()
+
+local key = "Starlight"  -- Set your key to "Starlight"
+
+-- Rayfield Window Setup
+Rayfield:CreateWindow({
+    Name = "Starlight",
+    LoadingTitle = "Loading Starlight...",
+    LoadingSubtitle = "Please wait...",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "StarlightFolder",
+        FileName = "starlight_config"
+    },
+    Discord = {
+        Enabled = true,
+        Invite = "discord.gg/starlight",
+        Version = "1.0"
+    },
+    KeySystem = true,
+    Key = key
+})
+
+-- Key System for Access
+Rayfield:CreateKeySystem({
+    Key = key,
+    OnKeyEntered = function()
+        print("Key accepted! Welcome to Starlight.")
+    end,
+    OnIncorrectKey = function()
+        print("Incorrect key! Access denied.")
+    end
+})
+
+-- --- ESP --- 
+
+local espEnabled = {
+    Murderer = true,
+    Sheriff = true,
+    Innocent = true,
+    Hero = true  -- Enable Hero ESP
+}
+
+-- Function to get player role color
+local function getPlayerRoleColor(player)
+    if player.Team then
+        if player.Team.Name == "Murderer" then
+            return Color3.fromRGB(255, 0, 0)  -- Red for Murderer
+        elseif player.Team.Name == "Sheriff" then
+            return Color3.fromRGB(0, 0, 255)  -- Blue for Sheriff
+        elseif player.Team.Name == "Innocent" then
+            return Color3.fromRGB(0, 255, 0)  -- Green for Innocent
+        elseif player.Team.Name == "Hero" then
+            return Color3.fromRGB(255, 255, 0)  -- Yellow for Hero
+        end
+    end
+    return Color3.fromRGB(255, 255, 255)  -- Default to white if no role
+end
+
+-- Create ESP for each player
+local function createESP(player)
+    if player == game.Players.LocalPlayer then return end
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+
+    local espBox = Instance.new("BoxHandleAdornment")
+    espBox.Adornee = char.HumanoidRootPart
+    espBox.Size = Vector3.new(2, 5, 2)
+    espBox.Color3 = getPlayerRoleColor(player)
+    espBox.AlwaysOnTop = true
+    espBox.ZIndex = 10
+    espBox.Parent = game:GetService("Workspace").CurrentCamera
+end
+
+-- Update ESP
+local function updateESP()
+    local players = game:GetService("Players")
+    local localPlayer = game.Players.LocalPlayer
+    local camera = game:GetService("Workspace").CurrentCamera
+
+    -- Clear previous ESP
+    for _, adornment in pairs(camera:GetChildren()) do
+        if adornment:IsA("BoxHandleAdornment") then
+            adornment:Destroy()
+        end
+    end
+
+    -- Create new ESP boxes based on the enabled roles
+    for _, player in pairs(players:GetPlayers()) do
+        if (espEnabled.Murderer and player.Team and player.Team.Name == "Murderer") or
+           (espEnabled.Sheriff and player.Team and player.Team.Name == "Sheriff") or
+           (espEnabled.Innocent and player.Team and player.Team.Name == "Innocent") or
+           (espEnabled.Hero and player.Team and player.Team.Name == "Hero") then
+            createESP(player)
+        end
+    end
+end
+
+-- Call updateESP periodically
+game:GetService("RunService").Heartbeat:Connect(updateESP)
+
+-- --- Toggle ESP --- 
+
+local function toggleESP(role)
+    espEnabled[role] = not espEnabled[role]
+    print(role .. " ESP toggled: " .. (espEnabled[role] and "Enabled" or "Disabled"))
+end
+
+Rayfield:CreateButton({
+    Name = "Toggle Murderer ESP",
+    Callback = function()
+        toggleESP("Murderer")
+    end
+})
+
+Rayfield:CreateButton({
+    Name = "Toggle Sheriff ESP",
+    Callback = function()
+        toggleESP("Sheriff")
+    end
+})
+
+Rayfield:CreateButton({
+    Name = "Toggle Innocent ESP",
+    Callback = function()
+        toggleESP("Innocent")
+    end
+})
+
+Rayfield:CreateButton({
+    Name = "Toggle Hero ESP",  -- New toggle for Hero ESP
+    Callback = function()
+        toggleESP("Hero")
+    end
+})
+
+-- --- Autofarm Coins (Toggled) ---
+
+local autofarmEnabled = false  -- Default state is off
+
+local function toggleAutofarmCoins()
+    autofarmEnabled = not autofarmEnabled
+    if autofarmEnabled then
+        print("Autofarm Coins: Enabled")
+        autofarmCoins()  -- Start autofarming coins
+    else
+        print("Autofarm Coins: Disabled")
+    end
+end
+
+local function autofarmCoins()
+    local player = game.Players.LocalPlayer
+    local coins = game:GetService("Workspace").Coins:GetChildren()  -- Assuming coins are stored under "Coins"
+
+    -- Loop to collect coins automatically if autofarm is enabled
+    while autofarmEnabled do
+        for _, coin in pairs(coins) do
+            if coin and coin:IsA("Part") and coin.Parent == game.Workspace.Coins then
+                -- Move the character to collect the coin (simplified method)
+                player.Character.HumanoidRootPart.CFrame = coin.CFrame
+                wait(0.1)  -- Adjust the wait time based on your needs
+            end
+        end
+        wait(1)  -- Adjust this interval for the farming speed
+    end
+end
+
+Rayfield:CreateButton({
+    Name = "Toggle Autofarm Coins",
+    Callback = toggleAutofarmCoins
+})
+
+-- --- Auto Shoot Murderer (Small GUI) ---
+
+local autoShootFrame = Instance.new("Frame")
+autoShootFrame.Size = UDim2.new(0, 200, 0, 100)
+autoShootFrame.Position = UDim2.new(0.5, -100, 0.5, -50)
+autoShootFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+autoShootFrame.BackgroundTransparency = 0.5
+autoShootFrame.Parent = game.Players.LocalPlayer.PlayerGui
+
+local shootButton = Instance.new("TextButton")
+shootButton.Size = UDim2.new(0, 180, 0, 40)
+shootButton.Position = UDim2.new(0, 10, 0, 10)
+shootButton.Text = "Start Auto Shooting"
+shootButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+shootButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+shootButton.Parent = autoShootFrame
+
+local function autoShootMurderer()
+    local players = game:GetService("Players")
+    local localPlayer = game.Players.LocalPlayer
+    local murderer = nil
+
+    -- Function to detect the murderer
+    local function findMurderer()
+        for _, player in pairs(players:GetPlayers()) do
+            if player.Team and player.Team.Name == "Murderer" then
+                murderer = player
+                break
+            end
+        end
+    end
+
+    -- Shoot murderer automatically
+    while murderer do
+        findMurderer()
+        if murderer then
+            -- Simulate shooting the murderer (adjust based on actual shooting method in MM2)
+            print("Shooting murderer: " .. murderer.Name)
+            -- Add shooting action here, e.g., trigger shooting event
+        end
+        wait(1)  -- Check for the murderer every second
+    end
+end
+
+shootButton.MouseButton1Click:Connect(function()
+    autoShootMurderer()
+    shootButton.Text = "Auto Shooting Active"
+    shootButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+end)
+
