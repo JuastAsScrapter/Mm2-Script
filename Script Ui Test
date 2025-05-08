@@ -1,0 +1,114 @@
+-- Load the Material Lua UI Library
+local Material = loadstring(game:HttpGet("https://raw.githubusercontent.com/Kinlei/MaterialLua/main/Module.lua"))()
+
+-- Create the GUI Window
+local UI = Material.Load({
+    Title = "Blagaz Hub",
+    Style = 1, -- 1 = Dark, 2 = Light
+    SizeX = 500,
+    SizeY = 400,
+    Theme = "Dark"
+})
+
+-- Main Tab
+local MainTab = UI.New({
+    Title = "Main"
+})
+
+MainTab.Toggle({
+    Text = "Auto Farm",
+    Callback = function(state)
+        getgenv().AutoFarm = state
+        while getgenv().AutoFarm do
+            task.wait(1)
+            print("Auto Farming...")
+            -- Insert farming logic here
+        end
+    end,
+    Enabled = false
+})
+
+MainTab.Button({
+    Text = "Teleport to Base",
+    Callback = function()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
+    end
+})
+
+MainTab.Slider({
+    Text = "Walk Speed",
+    Callback = function(value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+    end,
+    Min = 16,
+    Max = 100,
+    Def = 16
+})
+
+-- Utility Tab
+local UtilityTab = UI.New({
+    Title = "Utilities"
+})
+
+UtilityTab.Button({
+    Text = "Rejoin Server",
+    Callback = function()
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer)
+    end
+})
+
+UtilityTab.Button({
+    Text = "Copy Discord Invite",
+    Callback = function()
+        setclipboard("https://discord.gg/yourserver")
+        print("Copied Discord Invite!")
+    end
+})
+
+UtilityTab.Toggle({
+    Text = "Anti AFK",
+    Callback = function(state)
+        if state then
+            local vu = game:GetService("VirtualUser")
+            game:GetService("Players").LocalPlayer.Idled:Connect(function()
+                vu:Button2Down(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+                task.wait(1)
+                vu:Button2Up(Vector2.new(0, 0), workspace.CurrentCamera.CFrame)
+            end)
+        end
+    end,
+    Enabled = true
+})
+
+-- Visual Tab
+local VisualTab = UI.New({
+    Title = "Visuals"
+})
+
+VisualTab.Toggle({
+    Text = "ESP Boxes (Basic)",
+    Callback = function(state)
+        getgenv().ESPEnabled = state
+        if state then
+            for _, v in pairs(game.Players:GetPlayers()) do
+                if v ~= game.Players.LocalPlayer and v.Character and v.Character:FindFirstChild("HumanoidRootPart") then
+                    local box = Instance.new("BoxHandleAdornment", v.Character)
+                    box.Adornee = v.Character
+                    box.Size = Vector3.new(4, 6, 2)
+                    box.Transparency = 0.6
+                    box.AlwaysOnTop = true
+                    box.ZIndex = 5
+                    box.Color3 = Color3.fromRGB(255, 0, 0)
+                    box.Name = "BlagazESP"
+                end
+            end
+        else
+            for _, v in pairs(game.Players:GetPlayers()) do
+                if v.Character and v.Character:FindFirstChild("BlagazESP") then
+                    v.Character:FindFirstChild("BlagazESP"):Destroy()
+                end
+            end
+        end
+    end,
+    Enabled = false
+})
